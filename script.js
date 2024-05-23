@@ -5,12 +5,21 @@ const port = 3000;
 // Définir le moteur de vue sur EJS
 app.set('view engine', 'ejs');
 
-// Route de base
+// Route pour la page d'accueil
 app.get('/', (req, res) => {
-  res.render('index', { message: 'Hello World!' });
+  // Définir les données du jeu de morpion
+  const morpion = [
+    ['', '', ''],
+    ['', '', ''],
+    ['', '', '']
+  ];
+  
+  // Rendre la vue EJS et passer les données du jeu de morpion
+  res.render('index', { morpion: morpion });
 });
 
+// Démarrer le serveur
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  console.log(`Server is running on http://localhost:${port}`);
 });
 
