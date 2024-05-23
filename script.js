@@ -1,41 +1,87 @@
+// Dans votre fichier app.js (ou index.js)
+
 const express = require('express');
-const bodyParser = require('body-parser');
 const app = express();
 const port = 3000;
 
-// Utiliser bodyParser pour traiter les données POST
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// Définir le moteur de vue sur EJS
 app.set('view engine', 'ejs');
 
-// Variable pour suivre le joueur courant
+// Middleware pour parser le corps des requêtes POST
+app.use(express.urlencoded({ extended: true }));
+
 let currentPlayer = 'X';
+let morpion = [
+  ['', '', ''],
+  ['', '', ''],
+  ['', '', '']
+];
 
-// Route pour la page d'accueil (GET)
+// Route pour afficher la page de jeu
 app.get('/', (req, res) => {
-  // Définir les données du jeu de morpion
-  const morpion = [
-    ['', '', ''],
-    ['', '', ''],
-    ['', '', '']
-  ];
-  
-  // Rendre la vue EJS et passer les données du jeu de morpion et le joueur courant
-  res.render('index', { morpion: morpion, currentPlayer: currentPlayer });
+  res.render('index', { currentPlayer, morpion });
 });
 
-// Route pour gérer l'envoi du formulaire (POST)
+// Route pour gérer la soumission du formulaire
 app.post('/submit', (req, res) => {
-  // Traitement des données du formulaire
-  console.log('Données du formulaire:', req.body);
-  // Mettre à jour le joueur courant
-  currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-  // Rediriger vers la page d'accueil
-  res.redirect('/');
+  const { cell } = req.body;
+  const [i, j] = cell.split('-').map(Number);
+  
+  // Mettre à jour le tableau avec le coup joué
+  morpion[i][j] = currentPlayer;
+
+  // Vérifier s'il y a un gagnant ou un match nul
+  const winner = checkWinner();
+  if (winner) {
+    if (winner === 'draw') {
+      res.send('Match nul !');
+    } else {
+      res.send(`Le joueur ${winner} a gagné !`);
+    }
+    // Réinitialiser le tableau
+    morpion = [
+      ['', '', ''],
+      ['', '', ''],
+      ['', '', '']
+    ];
+  } else {
+    // Changer de joueur
+    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+    // Rediriger vers la page de jeu
+    res.redirect('/');
+  }
 });
 
-// Démarrer le serveur
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+// Fonction pour vérifier s'il y a un gagnant
+function checkWinner() {
+  // Vérification des lignes et colonnes
+  for (let i = 0; i < 3; i++) {
+    if (morpion[i][0] !== '' && morpion[i][0] === morpion[i][1] && morpion[i][1] === morpion[i][2]) {
+      return morpion[i][0];
+    }
+    if (morpion[0][i] !== '' && morpion[0][i] === morpion[1][i] && morpion[1][i] === morpion[2][i]) {
+      return morpion[0][i];
+    }
+  }
+
+  // Vérification des diagonales
+  if (morpion[0][0] !== '' && morpion[0][0] === morpion[1][1] && morpion[1][1] === morpion[2][2]) {
+    return morpion[0][0];
+  }
+  if (morpion[0][2] !== '' && morpion[0][2] === morpion[1][1] && morpion[1][1] === morpion[2][0]) {
+    return morpion[0][2];
+  }
+
+  // Vérification match nul
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (morpion[i][j] === '') {
+        // Il reste des cases vides, le jeu continue
+        return null;
+      }
+    }
+  }
+  // Si toutes les cases sont remplies et aucun gagnant n'est trouvé, c'est un match nul
+  return 'draw';
+}
+
+app.listen(port, () => console.log(`Server listening on port ${port}`));

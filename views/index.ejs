@@ -19,13 +19,17 @@
 <body>
   <h1>Jeu de Morpion</h1>
   <p>Joueur courant : <%= currentPlayer %></p>
-  <form action="/submit" method="post">
+  <form action="/submit" method="POST">
     <table>
       <% for (let i = 0; i < morpion.length; i++) { %>
         <tr>
           <% for (let j = 0; j < morpion[i].length; j++) { %>
             <td>
-              <input type="checkbox" name="case<%= i + '-' + j %>" id="<%= 'checkbox-' + i + '-' + j %>" <% if (morpion[i][j] !== '') { %> disabled <% } %> />
+              <% if (morpion[i][j] === '') { %>
+                <input type="checkbox" name="cell" value="<%= i + '-' + j %>" id="<%= 'checkbox-' + i + '-' + j %>" />
+              <% } else { %>
+                <%= morpion[i][j] %>
+              <% } %>
             </td>
           <% } %>
         </tr>
