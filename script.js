@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 pool.query(`
   CREATE TABLE IF NOT EXISTS games (
     id SERIAL PRIMARY KEY,
-    state JSON NOT NULL,
+    state TEXT NOT NULL,
     player CHAR(1) NOT NULL
   );
 `);
@@ -59,6 +59,13 @@ app.get('/game', async (req, res) => {
 app.post('/submit', async (req, res) => {
   try {
     const { cell } = req.body;
+
+    // Vérifier si une cellule a été sélectionnée
+    if (!cell) {
+      res.redirect('/game');
+      return;
+    }
+
     const [i, j] = cell.split('-').map(Number);
 
     const client = await pool.connect();
@@ -83,7 +90,7 @@ app.post('/submit', async (req, res) => {
       }
       // Réinitialiser le jeu
       await client.query('INSERT INTO games(state, player) VALUES($1, $2)', [JSON.stringify([["", "", ""], ["", "", ""], ["", "", ""]]), 'X']);
-      res.render('congrats', { message });
+      res.render('congrats', { message, newGameRedirect: true });
       return;
     }
 
@@ -98,6 +105,8 @@ app.post('/submit', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
+
 
 function checkWinner(morpion) {
   // Vérification des lignes et des colonnes

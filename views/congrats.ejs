@@ -8,9 +8,14 @@
 <body>
   <h1>Félicitations!</h1>
   <p><strong><%= message %></strong></p>
-  <form action="/" method="GET">
-    <button type="submit">Nouvelle Partie</button>
-  </form>
+  <% if (newGameRedirect) { %>
+    <form action="/new-game" method="POST">
+      <button type="submit">Nouvelle Partie</button>
+    </form>
+  <% } else { %>
+    <form action="/" method="GET">
+      <button type="submit">Accueil</button>
+    </form>
+  <% } %>
 </body>
 </html>
-
