@@ -243,4 +243,3 @@ function checkWinner(morpion) {
 }
 
 app.listen(port, () => console.log(`Server listening on port ${port}`));
-
