@@ -1,18 +1,31 @@
 {
-  "name": "td_nodejs_morpion",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "react.dev",
+  "version": "0.0.0",
+  "main": "/src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "cors": "^2.8.5",
-    "ejs": "^3.1.10",
     "express": "^4.19.2",
-    "pg": "^8.12.0"
+    "pg": "^8.12.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-scripts": "^5.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
