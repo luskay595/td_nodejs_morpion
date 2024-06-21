@@ -1,10 +1,12 @@
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
+const { createClient } = require('redis');
 
 const app = express();
 const port = 5000;
 
+// Configure PostgreSQL
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
@@ -13,10 +15,18 @@ const pool = new Pool({
   port: 5432,
 });
 
+// Configure Redis
+const redisClient = createClient();
+redisClient.connect()
+  .then(() => console.log('Connected to Redis'))
+  .catch(err => console.error('Redis connection error:', err));
+
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
+
+// Initialize the database table
 pool.query(`
   CREATE TABLE IF NOT EXISTS games (
     id SERIAL PRIMARY KEY,
@@ -27,7 +37,7 @@ pool.query(`
   );
 `);
 
-
+// Create a new game
 app.post('/api/games', async (req, res) => {
   try {
     const newState = JSON.stringify([["", "", ""], ["", "", ""], ["", "", ""]]);
@@ -36,12 +46,16 @@ app.post('/api/games', async (req, res) => {
     const result = await pool.query('INSERT INTO games(state, player) VALUES($1, $2) RETURNING id', [newState, newPlayer]);
 
     res.json({ id: result.rows[0].id });
+
+    // Increment the games counter in Redis
+    await redisClient.incr('gamesPlayed');
   } catch (error) {
     console.error('Error creating new game:', error);
     res.status(500).send('Internal Server Error');
   }
 });
 
+// Update game state
 app.put('/api/games/:id', async (req, res) => {
   try {
     const gameId = req.params.id;
@@ -87,6 +101,7 @@ app.put('/api/games/:id', async (req, res) => {
   }
 });
 
+// Get game state
 app.get('/api/games/:id', async (req, res) => {
   try {
     const gameId = req.params.id;
@@ -99,6 +114,18 @@ app.get('/api/games/:id', async (req, res) => {
   }
 });
 
+// Get the number of games played
+app.get('/api/games', async (req, res) => {
+  try {
+    const gamesPlayed = await redisClient.get('gamesPlayed');
+    res.json({ gamesPlayed: gamesPlayed ? parseInt(gamesPlayed) : 0 });
+  } catch (error) {
+    console.error('Error getting games played:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Check winner
 function checkWinner(morpion) {
   // Check rows and columns
   for (let i = 0; i < 3; i++) {
@@ -121,5 +148,14 @@ function checkWinner(morpion) {
   return null;
 }
 
+// Start server
 app.listen(port, () => console.log(`Server listening on port ${port}`));
 
+// Handle Redis client errors and close events
+redisClient.on('error', err => {
+  console.error('Redis client error:', err);
+});
+
+redisClient.on('end', () => {
+  console.log('Redis client connection closed');
+});
