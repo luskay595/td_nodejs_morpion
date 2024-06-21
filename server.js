@@ -3,7 +3,7 @@ const { Pool } = require('pg');
 const cors = require('cors');
 
 const app = express();
-const port = 3000;
+const port = 5000;
 
 const pool = new Pool({
   user: 'postgres',
@@ -17,7 +17,6 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
-
 pool.query(`
   CREATE TABLE IF NOT EXISTS games (
     id SERIAL PRIMARY KEY,
@@ -27,6 +26,7 @@ pool.query(`
     CONSTRAINT valid_player CHECK (player IN ('X', 'O'))
   );
 `);
+
 
 app.post('/api/games', async (req, res) => {
   try {

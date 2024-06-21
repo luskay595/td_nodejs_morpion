@@ -9,7 +9,7 @@ export default function Game() {
   useEffect(() => {
     async function createNewGame() {
       try {
-        const response = await fetch('http://localhost:3000/api/games', {
+        const response = await fetch('http://localhost/api/games', {
           method: 'POST',
         });
         const data = await response.json();
@@ -25,7 +25,7 @@ export default function Game() {
     if (!gameId) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/games/${gameId}`, {
+      const response = await fetch(`http://localhost/api/games/${gameId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
