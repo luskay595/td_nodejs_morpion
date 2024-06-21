@@ -5,6 +5,7 @@ export default function Game() {
   const [squares, setSquares] = useState(Array(9).fill(null));
   const [xIsNext, setXIsNext] = useState(true);
   const [gameId, setGameId] = useState(null);
+  const [gamesPlayed, setGamesPlayed] = useState(0);
 
   useEffect(() => {
     async function createNewGame() {
@@ -18,7 +19,19 @@ export default function Game() {
         console.error('Error creating new game:', error);
       }
     }
+
+    async function fetchGamesPlayed() {
+      try {
+        const response = await fetch('http://localhost/api/games');
+        const data = await response.json();
+        setGamesPlayed(data.gamesPlayed);
+      } catch (error) {
+        console.error('Error fetching games played:', error);
+      }
+    }
+
     createNewGame();
+    fetchGamesPlayed();
   }, []);
 
   async function handlePlay(nextSquares, cell) {
@@ -45,6 +58,8 @@ export default function Game() {
         } else {
           alert(`Winner: ${winner}`);
         }
+        // Fetch the updated number of games played
+        fetchGamesPlayed();
       }
     } catch (error) {
       console.error('Error playing move:', error);
@@ -53,9 +68,14 @@ export default function Game() {
 
   return (
     <div className="game">
+      <div className="game-info">
+        <h3>Games Played: {gamesPlayed}</h3>
+        <button onClick={() => window.location.reload()}>New Game</button>
+      </div>
       <div className="game-board">
         <Board xIsNext={xIsNext} squares={squares} onPlay={handlePlay} />
       </div>
     </div>
   );
 }
+
